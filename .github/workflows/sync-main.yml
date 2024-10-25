@@ -1,4 +1,3 @@
-# .github/workflows/sync-to-test-sync.yml
 name: Sync to test-sync Repo
 
 on:
@@ -21,9 +20,10 @@ jobs:
 
       - name: Add test-sync repo as a remote
         run: |
-          git remote set-url test-sync https://juvigh:${{ secrets.TEST_SYNC_PAT }}@github.com/juliomordev/test-sync.git || git remote add test-sync https://juvigh:${{ secrets.TEST_SYNC_PAT }}@github.com/juliomordev/test-sync.git
+          git remote remove test-sync || echo "No remote to remove"
+          git remote add test-sync https://juvigh:${{ secrets.TEST_SYNC_PAT }}@github.com/juliomordev/test-sync.git
           git fetch test-sync
 
       - name: Push to test-sync's main branch
         run: |
-          git push test-sync main:main
+          git push test-sync main:main || echo "Push failed"
