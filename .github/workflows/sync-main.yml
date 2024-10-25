@@ -15,15 +15,14 @@ jobs:
 
       - name: Set up Git config
         run: |
-          git config --global user.name "GitHub Action Async"
-          git config --global user.email "bot@users.noreply.github.com"
+          git config --global user.name "juvigh"
+          git config --global user.email "juliolk.4321@gmail.com"
 
       - name: Add test-sync repo as a remote
         run: |
-          git remote remove test-sync || echo "No remote to remove"
           git remote add test-sync https://juvigh:${{ secrets.TEST_SYNC_PAT }}@github.com/juliomordev/test-sync.git
           git fetch test-sync
 
       - name: Push to test-sync's main branch
         run: |
-          git push test-sync main:main || echo "Push failed"
+          git push test-sync main:main
