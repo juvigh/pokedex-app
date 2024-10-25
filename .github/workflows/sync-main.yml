@@ -20,7 +20,7 @@ jobs:
 
       - name: Add test-sync repo as a remote
         run: |
-          git remote add test-sync https://juvigh:${{ secrets.TEST_SYNC_PAT }}@github.com/juliomordev/test-sync.git
+          git remote set-url test-sync https://juvigh:${{ secrets.TEST_SYNC_PAT }}@github.com/juliomordev/test-sync.git
           git fetch test-sync
 
       - name: Push to test-sync's main branch
