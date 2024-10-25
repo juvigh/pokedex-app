@@ -15,7 +15,7 @@ jobs:
 
       - name: Set up Git config
         run: |
-          git config --global user.name "juvigh"
+          git config --global user.name "Github actions"
           git config --global user.email "juliolk.4321@gmail.com"
 
       - name: Add test-sync repo as a remote
