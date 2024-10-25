@@ -1,0 +1,29 @@
+# .github/workflows/sync-to-test-sync.yml
+name: Sync to test-sync Repo
+
+on:
+  push:
+    branches:
+      - main  # O workflow será executado em cada push na branch 'main'
+
+jobs:
+  sync_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the pokeapp repository
+        uses: actions/checkout@v3
+
+      - name: Set up Git config
+        run: |
+          git config --global user.name "GitHub Action Async"
+          git config --global user.email "bot@users.noreply.github.com"
+
+      - name: Add test-sync repo as a remote
+        run: |
+          git remote add test-sync https://juvigh:${{ secrets.TEST_SYNC_PAT }}@github.com/juliomordev/test-sync.git
+          git fetch test-sync
+
+      - name: Push to test-sync's main branch
+        run: |
+          git push test-sync main:main
