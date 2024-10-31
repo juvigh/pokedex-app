@@ -1,11 +1,12 @@
 import axios from "axios";
 import { hasuraKey } from "../../providers";
+import { Pokemon } from "../../types";
 
-export const insertPokemon = async (pokemon: any) => {
+export const insertPokemon = async (pokemon: Pokemon) => {
     const response = await axios.post('https://pokemons-list.hasura.app/v1/graphql', {
         query: `
         mutation InserirPokemon($pokemon_name: String!, $front_sprites: String!) {
-          insert_pokemons_pokemon(objects: {pokemon_name: $pokemon_name, front_sprites: $front_sprites}) {
+          insert_pokelist_pokemon(objects: {pokemon_name: $pokemon_name, front_sprites: $front_sprites}) {
             returning {
               pokemon_name
               front_sprites
@@ -15,8 +16,8 @@ export const insertPokemon = async (pokemon: any) => {
         }
       `,
         variables: {
-            pokemon_name: pokemon.name,
-            front_sprites: pokemon.sprites.front_default,
+            pokemon_name: pokemon.pokemon_name,
+            front_sprites: pokemon.front_sprites,
         },
     }, {
         headers: {

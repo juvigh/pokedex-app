@@ -3,25 +3,25 @@ import PokemonCard from '../poke-card/poke-card.component';
 
 interface FavoritedPokemonsProps {
   favoritedPokemons: any[];
-  onToggleFavorite: (pokemon: any) => void;
 }
 
-const FavoritedPokemons: React.FC<FavoritedPokemonsProps> = ({ favoritedPokemons, onToggleFavorite }) => {
+const FavoritedPokemons: React.FC<FavoritedPokemonsProps> = ({ favoritedPokemons }) => {
+  console.log(favoritedPokemons);
   return (
-    <div className='favorited-pokemons flex flex-col p-6'>
+    <div className='favorited-pokemons flex flex-col gap-2'>
       <h2>Pokémons Favoritados</h2>
+      <div className='flex flex-wrap gap-3'>
       {favoritedPokemons.length > 0 ? (
         favoritedPokemons.map((pokemon, index) => (
           <PokemonCard 
             key={index} 
-            pokemon={pokemon} 
-            onToggleFavorite={onToggleFavorite} 
-            isFavorited={true}
+            pokemon={pokemon.pokemon} 
           />
         ))
       ) : (
         <p>Nenhum Pokémon favoritado</p>
       )}
+      </div>
     </div>
   );
 };

@@ -6,7 +6,7 @@ export const fetchPokemons = async () => {
       const { data } = await axios.post('https://pokemons-list.hasura.app/v1/graphql', {
         query: `
           query Pokemons {
-            pokemons_pokemon {
+            pokelist_pokemon {
               pokemon_name
               front_sprites
               id
@@ -18,7 +18,7 @@ export const fetchPokemons = async () => {
           'x-hasura-admin-secret': hasuraKey,
         }
       });
-      return data.data.pokemons_pokemon;
+      return data?.data.pokelist_pokemon;
     } catch (error) {
       console.error('Erro ao buscar Pokémons:', error);
       throw error;
