@@ -1,80 +1,57 @@
 import React from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { fetchPokemons } from '../domain/pokemon/get-pokemons.use-case-';
-import { insertPokemon } from '../domain/pokemon/insert-pokemon.use-case';
-import { fetchPokemon } from '../domain/poke-api/get-pokemon-name.use-case';
+import { usePokemons } from './use-pokemons.hook';
+import { usePokemonDetails } from './use-pokemon-details';
+import { useFavoritedPokemons } from './use-favorited-pokemons.hook';
+import { useInsertPokemon } from './use-insert-pokemon.hook';
+import { PokeApiPokemon, Pokemon } from '../types';
+import { deleteFavorite } from '../domain/favorite-pokemons/delete-favorite-pokemon.use-case';
+
+const convertToPokemon = (pokeApiPokemon: PokeApiPokemon): Pokemon => {
+  return {
+    pokemon_id: pokeApiPokemon.id,
+    pokemon_name: pokeApiPokemon.name,
+    front_sprites: pokeApiPokemon.sprites.front_default,
+  };
+};
 
 export const usePokemonApp = () => {
   const [name, setName] = React.useState('');
-  const [pokemon, setPokemon] = React.useState<any>(null);
-  const [pokemonsList, setPokemonsList] = React.useState<any[]>([]);
-  const [favoritedPokemons, setFavoritedPokemons] = React.useState<any[]>(() => {
-    const storedFavorites = localStorage.getItem('favoritedPokemons');
-    return storedFavorites ? JSON.parse(storedFavorites) : [];
-  });
-
-  React.useEffect(() => {
-    localStorage.setItem('favoritedPokemons', JSON.stringify(favoritedPokemons));
-  }, [favoritedPokemons]);
-
-  const { data, isFetching, isError } = useQuery({
-    queryKey: ['pokemon', name],
-    queryFn: () => fetchPokemon(name),
-    enabled: !!name,
-    retry: false,
-  });
-
-  React.useEffect(() => {
-    if (data) {
-      setPokemon(data);
-    }
-  }, [data]);
-
-  const mutation = useMutation({
-    mutationFn: async (pokemon: any) => {
-      const response = await insertPokemon(pokemon);
-      return response;
-    },
-    onSuccess: async () => {
-      try {
-        const updatedPokemons = await fetchPokemons();
-        setPokemonsList(updatedPokemons);
-      } catch (error) {
-        console.error('Erro ao atualizar a lista de Pokémons:', error);
-      }
-    },
-  });
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const initialPokemons = await fetchPokemons();
-        setPokemonsList(initialPokemons);
-      } catch (error) {
-        console.error('Erro ao buscar Pokémons iniciais:', error);
-      }
-    })();
-  }, []);
+  const [isInsertPokemonError, setIsInsertPokemonError] = React.useState(false);
+  const { data: pokemonsList, refetch: refetchPokemons, isLoadingPokemons } = usePokemons();
+  const { favoritedPokemons, insertFavorite, isLoadingFavoritedPokemons, refetch: refetchFavorited } = useFavoritedPokemons();
+  const { data: pokemon, isFetching, isError } = usePokemonDetails(name);
+  const insertPokemonMutation = useInsertPokemon();
 
   const handleSearch = (searchName: string) => {
     setName(searchName);
+    setIsInsertPokemonError(false);
   };
 
-  const handleInsert = () => {
+  const handleInsert = async () => {
     if (pokemon) {
-      mutation.mutate(pokemon);
+      const formattedPokemon = convertToPokemon(pokemon);
+      const isDuplicate = pokemonsList.some(
+        (existingPokemon: any) => existingPokemon.pokemon_name === formattedPokemon.pokemon_name
+      );
+  
+      if (isDuplicate) {
+        setIsInsertPokemonError(true);
+        return;
+      }
+      insertPokemonMutation.mutateAsync(formattedPokemon).then(() => {
+        refetchPokemons();
+      });
+
     }
   };
 
   const toggleFavorite = (pokemon: any) => {
-    setFavoritedPokemons(prevFavorites => {
-      const isFavorited = prevFavorites.some(p => p.name === pokemon.name);
-      if (isFavorited) {
-        return prevFavorites.filter(p => p.name !== pokemon.name);
-      } else {
-        return [...prevFavorites, pokemon];
-      }
-    });
+    const isFavorited = favoritedPokemons.some((fav: any) => fav.pokemon_id === pokemon.id);
+    if (isFavorited) {
+      deleteFavorite(pokemon.id).then(() => refetchFavorited());
+    } else {
+      insertFavorite(pokemon.id);
+    }
   };
 
   return {
@@ -82,9 +59,12 @@ export const usePokemonApp = () => {
     pokemonsList,
     favoritedPokemons,
     isFetching,
+    isLoadingFavoritedPokemons,
+    isLoadingPokemons,
     isError,
     handleSearch,
     handleInsert,
     toggleFavorite,
+    isInsertPokemonError
   };
 };
